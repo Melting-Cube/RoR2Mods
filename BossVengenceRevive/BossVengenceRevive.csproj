@@ -8,9 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="libs\**" />
-        <EmbeddedResource Remove="libs\**" />
-        <None Remove="libs\**" />
+        <Compile Remove="lib\**" />
+        <EmbeddedResource Remove="lib\**" />
+        <None Remove="lib\**" />
     </ItemGroup>
     
     <ItemGroup>
