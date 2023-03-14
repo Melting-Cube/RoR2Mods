@@ -2,9 +2,11 @@
 using System.Security.Permissions;
 using BepInEx;
 using BepInEx.Configuration;
+using Rewired.Utils;
 using RiskOfOptions;
 using RiskOfOptions.Options;
 using RoR2;
+using UnityEngine;
 using UnityEngine.Networking;
 
 [assembly: SecurityPermission( SecurityAction.RequestMinimum, SkipVerification = true )]
@@ -20,19 +22,20 @@ namespace BossVengenceRevive
         public const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "Melting-Cube";
         public const string PluginName = "BossVengenceRevive";
-        public const string PluginVersion = "1.2.0";
+        public const string PluginVersion = "2.0.0";
         
         //add config entries
         public static ConfigEntry<bool> Enabled { get; set; }
-        public static ConfigEntry<bool> Doppelganger { get; set; }
+        public static ConfigEntry<bool> TeleporterEvent { get; set; }
         public static ConfigEntry<bool> TeleporterBoss { get; set; }
         public static ConfigEntry<bool> MiscBoss { get; set; }
-
+        public static ConfigEntry<bool> Doppelganger { get; set; }
 
         //respawn method to call
     public void RespawnChar()
         {
             //see if they are playing with others
+            Logger.LogInfo("boss event cleared");
             bool solo = RoR2.RoR2Application.isInSinglePlayer || !NetworkServer.active;
             if (!solo)
             {
@@ -60,11 +63,18 @@ namespace BossVengenceRevive
                 true,
                 "Turn the mod on or off."
                 );
+            TeleporterEvent = Config.Bind<bool>(
+                "Boss Types",
+                "Teleporter Event",
+                true,
+                "Revive dead players after you complete a teleporter event."
+            );
             TeleporterBoss = Config.Bind<bool>(
                 "Boss Types",
                 "Teleporter Boss",
-                true,
-                "Revive dead players after you defeat a teleporter boss."
+                false,
+                "Revive dead players after you defeat a teleporter boss." +
+                "\nDoes not work with tricorn."
                 );
             Doppelganger = Config.Bind<bool>(
                 "Boss Types",
@@ -83,62 +93,74 @@ namespace BossVengenceRevive
             
             //add config options in-game
             ModSettingsManager.AddOption(new CheckBoxOption(Enabled));
+            ModSettingsManager.AddOption((new CheckBoxOption(TeleporterEvent)));
             ModSettingsManager.AddOption((new CheckBoxOption(TeleporterBoss)));
             ModSettingsManager.AddOption((new CheckBoxOption(MiscBoss)));
             ModSettingsManager.AddOption(new CheckBoxOption(Doppelganger));
 
             //On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
             Logger.LogInfo("Loaded BossVengenceRevive");
+            
+            //reload the config on run start
+            On.RoR2.BossGroup.Start += (orig, self) =>
+            {
+                orig(self);
+                Debug.Log("settings updated");
+                Config.Reload();
+            };
 
             //is mod enabled
             if (!Enabled.Value)
                 return;
 
-            //everytime a character is hit
-            On.RoR2.CharacterBody.OnTakeDamageServer += (orig, self, damageReport) =>
+            //every portal completion
+            On.RoR2.TeleporterInteraction.ChargedState.OnEnter += (orig, self) =>
             {
                 //call original method
-                orig(self, damageReport);
+                orig(self);
 
-                //exit if the entity is alive
-                if (self.healthComponent.alive)
-                return;
+                if (!TeleporterEvent.Value) return;
+                RespawnChar();
+                Logger.LogInfo("teleporter finished charging, reviving dead players");
+            };
+            
+            //everytime a character dies
+            On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) => 
+            {
 
-                //see if there is a boss and if character has model
-                if (BossGroup.FindBossGroup(self) == null
-                    || self.GetComponent<ModelLocator>()?.modelTransform?.GetComponent<CharacterModel>() == null)
+                //exit if not a boss
+                if (!damageReport.victimIsBoss)
                     return;
 
                 //is character last member
-                if (BossGroup.FindBossGroup(self).combatSquad.memberCount <= 1)
+                if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount <= 1)
                 {
-                    //is defeated bossgroup doppelganger
-                    if (self.GetComponent<ModelLocator>()?.modelTransform?.GetComponent<CharacterModel>().isDoppelganger == true
-                        && Doppelganger.Value)
+                    //is defeated boss group a doppelganger
+                    if (!damageReport.victim.body.doppelgangerEffectInstance.IsNullOrDestroyed() && Doppelganger.Value)
                     {
                         RespawnChar();
                         Logger.LogInfo("Doppelganger killed, revived dead players");
                         return;
                     }
-
                     //is defeated bossgroup a teleporter boss
-                    if (BossGroup.FindBossGroup(self).GetComponent<TeleporterInteraction>()
+                    else if (BossGroup.FindBossGroup(damageReport.victimBody).GetComponent<TeleporterInteraction>()
                         && TeleporterBoss.Value)
                     {
                         RespawnChar();
                         Logger.LogInfo("Teleporter Boss killed, revived dead players");
                         return;
                     }
-
-                    //is defeated boss even a boss (misc.)
-                    if (self.isBoss
-                        && MiscBoss.Value)
+                    //any other bose
+                    else if(MiscBoss.Value)
                     {
                         RespawnChar();
                         Logger.LogInfo("Special Boss killed, revived dead players");
                         return;
                     }
                 }
+
+                    //call original method
+                orig(self, damageReport);
             };
         }
     }
