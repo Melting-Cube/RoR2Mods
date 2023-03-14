@@ -73,15 +73,16 @@ namespace BossVengenceRevive
                 "Boss Types",
                 "Teleporter Boss",
                 false,
-                "Revive dead players after you defeat a teleporter boss." +
-                "\nDoes not work with tricorn."
+                "Revive dead players after you defeat a teleporter boss."
                 );
             Doppelganger = Config.Bind<bool>(
                 "Boss Types",
                 "Doppelganger",
                 true,
                 "Revive dead players after you defeat a Doppelganger." +
-                "\nDoppelgangers are enabled by the Vengeance Artifact"
+                "\nDoppelgangers are enabled by the Vengeance Artifact." +
+                "\nThen Vengeance and Swarms Artifacts have known weird interactions and only " +
+                "one clone will be considered a Doppelganger, the other one will be a special boss"
                 );
             MiscBoss = Config.Bind<bool>(
                 "Boss Types",
