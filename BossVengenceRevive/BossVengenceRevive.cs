@@ -2,6 +2,8 @@
 using System.Security.Permissions;
 using BepInEx;
 using BepInEx.Configuration;
+using RiskOfOptions;
+using RiskOfOptions.Options;
 using RoR2;
 using UnityEngine.Networking;
 
@@ -10,14 +12,15 @@ using UnityEngine.Networking;
 
 namespace BossVengenceRevive
 {
+    [BepInDependency("com.rune580.riskofoptions")]
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     public class BossVengenceRevive : BaseUnityPlugin
     {
         //metadata
-        public const string PluginGUID = PluginAuthor + "." + PluginName;
-        public const string PluginAuthor = "com.Melting-Cube";
+        public const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
+        public const string PluginAuthor = "Melting-Cube";
         public const string PluginName = "BossVengenceRevive";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.2.0";
         
         //add config entries
         public static ConfigEntry<bool> Enabled { get; set; }
@@ -25,7 +28,8 @@ namespace BossVengenceRevive
         public static ConfigEntry<bool> TeleporterBoss { get; set; }
         public static ConfigEntry<bool> MiscBoss { get; set; }
 
-    //respawn method to call
+
+        //respawn method to call
     public void RespawnChar()
         {
             //see if they are playing with others
@@ -76,6 +80,12 @@ namespace BossVengenceRevive
                 "Revive dead players after you defeat a Special Boss." +
                 "\nSpecial bosses are ones such as Aurelionite or Alloy Worship Unit."
                 );
+            
+            //add config options in-game
+            ModSettingsManager.AddOption(new CheckBoxOption(Enabled));
+            ModSettingsManager.AddOption((new CheckBoxOption(TeleporterBoss)));
+            ModSettingsManager.AddOption((new CheckBoxOption(MiscBoss)));
+            ModSettingsManager.AddOption(new CheckBoxOption(Doppelganger));
 
             //On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
             Logger.LogInfo("Loaded BossVengenceRevive");
