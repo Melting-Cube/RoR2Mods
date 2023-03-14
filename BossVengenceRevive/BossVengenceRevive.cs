@@ -6,10 +6,11 @@ using Rewired.Utils;
 using RiskOfOptions;
 using RiskOfOptions.Options;
 using RoR2;
-using UnityEngine;
 using UnityEngine.Networking;
 
+#pragma warning disable CS0618
 [assembly: SecurityPermission( SecurityAction.RequestMinimum, SkipVerification = true )]
+#pragma warning restore CS0618
 
 
 namespace BossVengenceRevive
@@ -19,40 +20,17 @@ namespace BossVengenceRevive
     public class BossVengenceRevive : BaseUnityPlugin
     {
         //metadata
-        public const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
-        public const string PluginAuthor = "Melting-Cube";
-        public const string PluginName = "BossVengenceRevive";
-        public const string PluginVersion = "2.0.0";
+        private const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
+        private const string PluginAuthor = "Melting-Cube";
+        private const string PluginName = "BossVengenceRevive";
+        private const string PluginVersion = "2.0.0";
         
         //add config entries
-        public static ConfigEntry<bool> Enabled { get; set; }
-        public static ConfigEntry<bool> TeleporterEvent { get; set; }
-        public static ConfigEntry<bool> TeleporterBoss { get; set; }
-        public static ConfigEntry<bool> MiscBoss { get; set; }
-        public static ConfigEntry<bool> Doppelganger { get; set; }
-
-        //respawn method to call
-    public void RespawnChar()
-        {
-            //see if they are playing with others
-            Logger.LogInfo("boss event cleared");
-            bool solo = RoR2.RoR2Application.isInSinglePlayer || !NetworkServer.active;
-            if (!solo)
-            {
-                //loop through every player and res the ones that are dead
-                foreach (RoR2.PlayerCharacterMasterController playerCharacterMasterController
-                         in RoR2.PlayerCharacterMasterController.instances)
-                {
-                    bool playerConnected = playerCharacterMasterController.isConnected;
-                    bool isDead = !playerCharacterMasterController.master.GetBody()
-                                || playerCharacterMasterController.master.IsDeadAndOutOfLivesServer()
-                                || !playerCharacterMasterController.master.GetBody().healthComponent.alive;
-                    if (playerConnected && isDead)
-                        playerCharacterMasterController.master.RespawnExtraLife();
-                }
-            }
-            return;
-        }
+        private static ConfigEntry<bool> Enabled { get; set; } = null!;
+        private static ConfigEntry<bool> TeleporterEvent { get; set; } = null!;
+        private static ConfigEntry<bool> TeleporterBoss { get; set; } = null!;
+        private static ConfigEntry<bool> MiscBoss { get; set; } = null!;
+        private static ConfigEntry<bool> Doppelganger { get; set; } = null!;
 
         public void Awake()
         {
@@ -81,7 +59,7 @@ namespace BossVengenceRevive
                 true,
                 "Revive dead players after you defeat a Doppelganger." +
                 "\nDoppelgangers are enabled by the Vengeance Artifact." +
-                "\nThen Vengeance and Swarms Artifacts have known weird interactions and only " +
+                "\nWhen used together Vengeance and Swarms Artifacts have known weird interactions and only " +
                 "one clone will be considered a Doppelganger, the other one will be a special boss"
                 );
             MiscBoss = Config.Bind<bool>(
@@ -89,8 +67,10 @@ namespace BossVengenceRevive
                 "Special Bosses",
                 false,
                 "Revive dead players after you defeat a Special Boss." +
-                "\nSpecial bosses are ones such as Aurelionite or Alloy Worship Unit."
-                );
+                "\nSpecial bosses are ones such as Aurelionite or Alloy Worship Unit. " +
+                "This will trigger a revive after stages 2 and 4 of the Mithrix fight. " +
+                "After each stage of Voidling a revive will trigger."
+            );
             
             //add config options in-game
             ModSettingsManager.AddOption(new CheckBoxOption(Enabled));
@@ -101,18 +81,6 @@ namespace BossVengenceRevive
 
             //On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
             Logger.LogInfo("Loaded BossVengenceRevive");
-            
-            //reload the config on run start
-            On.RoR2.BossGroup.Start += (orig, self) =>
-            {
-                orig(self);
-                Debug.Log("settings updated");
-                Config.Reload();
-            };
-
-            //is mod enabled
-            if (!Enabled.Value)
-                return;
 
             //every portal completion
             On.RoR2.TeleporterInteraction.ChargedState.OnEnter += (orig, self) =>
@@ -120,7 +88,7 @@ namespace BossVengenceRevive
                 //call original method
                 orig(self);
 
-                if (!TeleporterEvent.Value) return;
+                if (!TeleporterEvent.Value || !Enabled.Value) return;
                 RespawnChar();
                 Logger.LogInfo("teleporter finished charging, reviving dead players");
             };
@@ -128,41 +96,58 @@ namespace BossVengenceRevive
             //everytime a character dies
             On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) => 
             {
-
-                //exit if not a boss
-                if (!damageReport.victimIsBoss)
-                    return;
-
-                //is character last member
-                if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount <= 1)
+                //is a boss and mod is enabled
+                if (damageReport.victimIsBoss && Enabled.Value)
                 {
-                    //is defeated boss group a doppelganger
-                    if (!damageReport.victim.body.doppelgangerEffectInstance.IsNullOrDestroyed() && Doppelganger.Value)
+                    //is character last member
+                    if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount <= 1)
                     {
+                        //is defeated boss group a doppelganger
+#pragma warning disable Publicizer001
+                        if (!damageReport.victim.body.doppelgangerEffectInstance.IsNullOrDestroyed() && Doppelganger.Value)
+#pragma warning restore Publicizer001
+                        {
+                            if (!Doppelganger.Value) return;
+                            Logger.LogInfo("Doppelganger killed, revived dead players");
+                        }
+                        //is defeated bossgroup a teleporter boss
+                        else if (BossGroup.FindBossGroup(damageReport.victimBody).GetComponent<TeleporterInteraction>())
+                        {
+                            if (!TeleporterBoss.Value) return;
+                            Logger.LogInfo("Teleporter Boss killed, revived dead players");
+                        }
+                        //any other bose
+                        else if(!MiscBoss.Value)
+                        {
+                            return;
+                        }
                         RespawnChar();
-                        Logger.LogInfo("Doppelganger killed, revived dead players");
-                        return;
-                    }
-                    //is defeated bossgroup a teleporter boss
-                    else if (BossGroup.FindBossGroup(damageReport.victimBody).GetComponent<TeleporterInteraction>()
-                        && TeleporterBoss.Value)
-                    {
-                        RespawnChar();
-                        Logger.LogInfo("Teleporter Boss killed, revived dead players");
-                        return;
-                    }
-                    //any other bose
-                    else if(MiscBoss.Value)
-                    {
-                        RespawnChar();
-                        Logger.LogInfo("Special Boss killed, revived dead players");
-                        return;
                     }
                 }
-
-                    //call original method
+                //call original method
                 orig(self, damageReport);
             };
+        }
+        
+        //respawn method to call
+        public void RespawnChar()
+        {
+            //see if they are playing with others
+            Logger.LogInfo("boss event cleared");
+            var solo = RoR2.RoR2Application.isInSinglePlayer || !NetworkServer.active;
+            if (solo) return;
+            //loop through every player and res the ones that are dead
+            foreach (var playerCharacterMasterController
+                     in RoR2.PlayerCharacterMasterController.instances)
+            {
+                var playerConnected = playerCharacterMasterController.isConnected;
+                var isDead = !playerCharacterMasterController.master.GetBody()
+                             || playerCharacterMasterController.master.IsDeadAndOutOfLivesServer()
+                             || !playerCharacterMasterController.master.GetBody().healthComponent.alive;
+                if (playerConnected && isDead)
+                    playerCharacterMasterController.master.RespawnExtraLife();
+            }
+            return;
         }
     }
 }
