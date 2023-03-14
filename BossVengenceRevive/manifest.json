@@ -1,6 +1,6 @@
 {
   "name": "BossVengenceRevive",
-  "version_number": "1.2.0",
+  "version_number": "2.0.0",
   "website_url": "https://github.com/Melting-Cube/RoR2Mods/tree/main/BossVengenceRevive",
   "description": "A mod with configurability that will revive dead players once other members of their team kill the boss or complete the Vengeance event.",
   "dependencies": [
