@@ -13,7 +13,7 @@
  - You can toggle the mod on/off and choose what boss groups you will respawn after.
 
 ## Changelog
-- 1.2.0 Added in-game configuration, option for revive after teleporter event, and improved performance. Moved repository
+- 2.0.0 Added in-game configuration, option for revive after teleporter event, and improved performance. Moved repository
 - 1.1.0 Added a config file with options to choose what boss groups you revive after
 - 1.0.2 Fixed minor oversights in the description and chat log (namely github link)
 - 1.0.1 Fixed problems with the manifest.json
