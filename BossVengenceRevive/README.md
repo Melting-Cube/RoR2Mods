@@ -12,6 +12,7 @@
  - You can toggle the mod on/off and choose what boss groups you will respawn after.
 
 ## Changelog
+- 1.2.0 Added configuration in-game and fixed outdated dependencies
 - 1.1.0 Added a config file with options to choose what boss groups you revive after
 - 1.0.2 Fixed minor oversights in the description and chat log (namely github link)
 - 1.0.1 Fixed problems with the manifest.json
@@ -19,7 +20,3 @@
 
 ## Contact
 - Discord: Melting Cube#1306
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbMTczNDcyMjgwNSwzNzAxNzM5OTAsLTc0Mj
-I5MDUxMF19
--->

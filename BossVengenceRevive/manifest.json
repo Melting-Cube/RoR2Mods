@@ -1,9 +1,10 @@
 {
   "name": "BossVengenceRevive",
-  "version_number": "1.1.0",
-  "website_url": "https://github.com/Melting-Cube/Boss-Vengence-Revive",
+  "version_number": "1.2.0",
+  "website_url": "https://github.com/Melting-Cube/RoR2Mods/tree/main/BossVengenceRevive",
   "description": "A mod with configurability that will revive dead players once other members of their team kill the boss or complete the Vengeance event.",
   "dependencies": [
-    "bbepis-BepInExPack-5.4.9"
+    "bbepis-BepInExPack-5.4.9",
+    "Rune580-Risk_Of_Options-2.5.3"
   ]
 }
