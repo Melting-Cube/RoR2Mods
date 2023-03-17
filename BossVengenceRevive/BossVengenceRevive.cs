@@ -2,7 +2,6 @@
 using System.Security.Permissions;
 using BepInEx;
 using BepInEx.Configuration;
-using Rewired.Utils;
 using RiskOfOptions;
 using RiskOfOptions.Options;
 using RoR2;
@@ -97,15 +96,15 @@ namespace BossVengenceRevive
             On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) => 
             {
                 //is a boss and mod is enabled
-                if (damageReport.victimIsBoss && Enabled.Value)
+                if (damageReport.victimIsBoss && Enabled.Value &&
+                    damageReport.victimMaster.inventory.GetItemCount(RoR2Content.Items.ExtraLife) == 0 &&
+                    damageReport.victimMaster.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoid) == 0)
                 {
                     //is character last member
                     if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount <= 1)
                     {
                         //is defeated boss group a doppelganger
-#pragma warning disable Publicizer001
-                        if (!damageReport.victim.body.doppelgangerEffectInstance.IsNullOrDestroyed() && Doppelganger.Value)
-#pragma warning restore Publicizer001
+                        if (damageReport.victimMaster.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0)
                         {
                             if (!Doppelganger.Value) return;
                             Logger.LogInfo("Doppelganger killed, revived dead players");
