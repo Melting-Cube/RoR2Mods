@@ -5,7 +5,7 @@
 
 ## Installation
 - Use a mod manager to ease the process
-- Otherwise extract the zip from thunderstore.io into “Risk of Rain 2\BepInEx\plugins”
+- Otherwise extract the zip from https://thunderstore.io/package/Melting-Cube/BossVengenceRevive/ into “Risk of Rain 2\BepInEx\plugins”
 
 ## Config
  - The mod can be configured in the in-game settings menu
