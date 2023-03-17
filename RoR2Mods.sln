@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BossVengenceRevive", "BossVengenceRevive\BossVengenceRevive.csproj", "{D563FD55-1B90-48E4-BB8E-162AA93EB878}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VengeanceSwarmFix", "VengeanceSwarmFix\VengeanceSwarmFix.csproj", "{FF297CF2-85C7-4F29-AEF3-F43F4C687DC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{D563FD55-1B90-48E4-BB8E-162AA93EB878}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D563FD55-1B90-48E4-BB8E-162AA93EB878}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D563FD55-1B90-48E4-BB8E-162AA93EB878}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF297CF2-85C7-4F29-AEF3-F43F4C687DC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF297CF2-85C7-4F29-AEF3-F43F4C687DC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF297CF2-85C7-4F29-AEF3-F43F4C687DC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF297CF2-85C7-4F29-AEF3-F43F4C687DC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
