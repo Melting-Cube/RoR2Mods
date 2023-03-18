@@ -1,8 +1,6 @@
 using System.Security;
 using System.Security.Permissions;
 using BepInEx;
-using RoR2;
-
 
 [assembly: SecurityPermission( SecurityAction.RequestMinimum, SkipVerification = true )]
 
@@ -24,7 +22,7 @@ namespace VengeanceSwarmFix
         {
             ConsoleLogger=base.Logger;
             ConsoleLogger.LogInfo("Loaded VengeanceSwarmFix");
-            //new DopplegangerSpawn();
+
             new SwarmSpawn();
         }
     }

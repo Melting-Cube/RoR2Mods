@@ -1,0 +1,9 @@
+{
+  "name": "VengeanceSwarmFix",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/Melting-Cube/RoR2Mods/tree/main/VengeanceSwarmFix",
+  "description": "Both your doppelgangers will now copy and drop your items when you have Artifact of Swarms and Vengeance",
+  "dependencies": [
+    "bbepis-BepInExPack-5.4.2103"
+  ]
+}
