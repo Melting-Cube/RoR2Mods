@@ -5,7 +5,7 @@
 
 ## Installation
 - Use a mod manager to ease the process
-- Otherwise extract the zip from https://thunderstore.io/package/Melting-Cube/BossVengenceRevive/ into “Risk of Rain 2\BepInEx\plugins”
+- Otherwise extract the zip from https://thunderstore.io/package/Melting-Cube/VengeanceSwarmFix/ into “Risk of Rain 2\BepInEx\plugins”
 
 ## Usage
 - Install the mod and enable swarms and vengeance, now Doppelgangers will now both have your items.
