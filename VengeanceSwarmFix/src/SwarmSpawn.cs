@@ -3,8 +3,6 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Rewired.Utils;
 using RoR2;
-using UnityEngine;
-using Console = System.Console;
 
 namespace VengeanceSwarmFix;
 
@@ -15,9 +13,6 @@ public class SwarmSpawn
 
         IL.RoR2.Artifacts.SwarmsArtifactManager.OnSpawnCardOnSpawnedServerGlobal += (il) =>
         {
-            VengeanceSwarmFix.ConsoleLogger.LogInfo(typeof(RoR2.DirectorSpawnRequest));
-            VengeanceSwarmFix.ConsoleLogger.LogInfo(nameof(RoR2.DirectorSpawnRequest));
-            VengeanceSwarmFix.ConsoleLogger.LogInfo(nameof(SpawnCard.SpawnResult.spawnRequest));
             ILCursor c = new ILCursor(il);
             bool found = c.TryGotoNext(
                 x => x.MatchCall<RoR2.DirectorCore>("get_instance"),
@@ -28,12 +23,15 @@ public class SwarmSpawn
             );
             if (found)
             {
-                VengeanceSwarmFix.ConsoleLogger.LogMessage("found the il");
                 c.Index += 1;
                 c.RemoveRange(4);
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloc_0);
                 c.EmitDelegate<Action<SpawnCard.SpawnResult, CharacterMaster>>(SpawnCharacter);
+            }
+            else
+            {
+                VengeanceSwarmFix.ConsoleLogger.LogError("Unable to set set hook");
             }
         };
     }
@@ -59,13 +57,14 @@ public class SwarmSpawn
 
     private static void SpawnCharacter (SpawnCard.SpawnResult sr, CharacterMaster cm)
     {
-        //spawn clone
+        //test if there is a character to clone
         if (cm.IsNullOrDestroyed())
         {
-            VengeanceSwarmFix.ConsoleLogger.LogWarning("unable to spawn clone, parrent is null or destroyed");
+            VengeanceSwarmFix.ConsoleLogger.LogWarning("unable to spawn clone, parent is null or destroyed");
             return;
         }
 
+        //Spawn clone
         CharacterMaster sm;
         try
         {
@@ -74,43 +73,27 @@ public class SwarmSpawn
         }
         catch (Exception e)
         {
-            VengeanceSwarmFix.ConsoleLogger.LogWarning("clone is unable to spawn ");
+            VengeanceSwarmFix.ConsoleLogger.LogWarning("Unable to spawn clone, may be bad position or max team size");
             return;
         }
-
-        //get spawn's charcter master
-        //CharacterMaster sm = go.GetComponent<CharacterMaster>();
-        //CharacterMaster sm = go.GetComponent<CharacterMaster>();
-
+        
+        //set inventory for doppelgangers
         try
         {
             //that is all unless doppelganger
             if (!IsDoppelganger(cm)) return;
-        }
-        catch
-        {
-            VengeanceSwarmFix.ConsoleLogger.LogWarning("unable to test if doppelganger for" + cm.name);
-        }
-
-        try
-        {
+            
             //copy items from original
             sm.inventory = cm.inventory;
-        }
-        catch
-        {
-            VengeanceSwarmFix.ConsoleLogger.LogError("unable to copy inventory for " + sm.name);
-        }
 
-        try
-        {
             //remove double stacks of cuthp
             setHPLoss(cm);
             setHPLoss(sm);
+
         }
-        catch (Exception e)
+        catch
         {
-            VengeanceSwarmFix.ConsoleLogger.LogWarning("unable to set hp loss for " + sm.name + " and " + cm.name);
+            VengeanceSwarmFix.ConsoleLogger.LogError("unable to update inventory for " + sm.name + " and " + cm.name);
         }
     }
 }
