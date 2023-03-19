@@ -16,7 +16,7 @@ namespace VengeanceSwarmFix
         private const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
         private const string PluginAuthor = "Melting-Cube";
         private const string PluginName = "VengeanceSwarmFix";
-        private const string PluginVersion = "1.0.0";
+        private const string PluginVersion = "1.0.1";
 
         public void Awake()
         {

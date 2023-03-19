@@ -13,6 +13,7 @@
 - This is a serverside mod and will have no effect as a client.
 
 ## Changelog
+- 1.0.1 Fixed dependency issue
 - 1.0.0 Initial Release
 
 ## Contact
