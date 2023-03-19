@@ -22,7 +22,7 @@ namespace BossVengenceRevive
         private const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
         private const string PluginAuthor = "Melting-Cube";
         private const string PluginName = "BossVengenceRevive";
-        private const string PluginVersion = "2.0.0";
+        private const string PluginVersion = "2.0.1";
         
         //add config entries
         private static ConfigEntry<bool> Enabled { get; set; } = null!;
