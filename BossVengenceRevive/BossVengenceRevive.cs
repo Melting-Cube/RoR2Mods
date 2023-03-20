@@ -104,25 +104,33 @@ namespace BossVengenceRevive
                     if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount <= 1)
                     {
                         //is defeated boss group a doppelganger
-                        if (damageReport.victimMaster.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0)
+                        if (damageReport.victimMaster.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0 )
                         {
-                            if (!Doppelganger.Value) return;
-                            Logger.LogInfo("Doppelganger killed, revived dead players");
+                            if (Doppelganger.Value)
+                            {
+                                Logger.LogInfo("Doppelganger killed, revived dead players");
+                                RespawnChar();
+                            }
                         }
                         //is defeated bossgroup a teleporter boss
                         else if (BossGroup.FindBossGroup(damageReport.victimBody).GetComponent<TeleporterInteraction>())
                         {
-                            if (!TeleporterBoss.Value) return;
-                            Logger.LogInfo("Teleporter Boss killed, revived dead players");
+                            if (TeleporterBoss.Value)
+                            {
+                                Logger.LogInfo("Teleporter Boss killed, revived dead players");
+                                RespawnChar();
+                            }
                         }
                         //any other bose
-                        else if(!MiscBoss.Value)
+                        else if(MiscBoss.Value)
                         {
-                            return;
+                            Logger.LogInfo("Special Boss killed, revived dead players");
+                            RespawnChar();
                         }
-                        RespawnChar();
+                        
                     }
                 }
+                
                 //call original method
                 orig(self, damageReport);
             };
