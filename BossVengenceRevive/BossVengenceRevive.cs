@@ -6,6 +6,7 @@ using RiskOfOptions;
 using RiskOfOptions.Options;
 using RoR2;
 using UnityEngine.Networking;
+using Console = System.Console;
 
 #pragma warning disable CS0618
 [assembly: SecurityPermission( SecurityAction.RequestMinimum, SkipVerification = true )]
@@ -22,7 +23,7 @@ namespace BossVengenceRevive
         private const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
         private const string PluginAuthor = "Melting-Cube";
         private const string PluginName = "BossVengenceRevive";
-        private const string PluginVersion = "2.0.2";
+        private const string PluginVersion = "2.0.3";
         
         //add config entries
         private static ConfigEntry<bool> Enabled { get; set; } = null!;
@@ -100,34 +101,53 @@ namespace BossVengenceRevive
                     damageReport.victimMaster.inventory.GetItemCount(RoR2Content.Items.ExtraLife) == 0 &&
                     damageReport.victimMaster.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoid) == 0)
                 {
-                    //is character last member
-                    if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount <= 1)
+                    //is character last member if not return
+                    try
                     {
-                        //is defeated boss group a doppelganger
-                        if (damageReport.victimMaster.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0 )
+                        if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount > 1)
                         {
-                            if (Doppelganger.Value)
-                            {
-                                Logger.LogInfo("Doppelganger killed, revived dead players");
-                                RespawnChar();
-                            }
+                            //call original method
+                            orig(self, damageReport);
+
+                            return;
                         }
-                        //is defeated bossgroup a teleporter boss
-                        else if (BossGroup.FindBossGroup(damageReport.victimBody).GetComponent<TeleporterInteraction>())
-                        {
-                            if (TeleporterBoss.Value)
-                            {
-                                Logger.LogInfo("Teleporter Boss killed, revived dead players");
-                                RespawnChar();
-                            }
-                        }
-                        //any other bose
-                        else if(MiscBoss.Value)
-                        {
+                    }
+                    catch
+                    {
+                        //call original method
+                        orig(self, damageReport);
+
+                        return;
+                    }
+                    
+                    int group;
+                    try
+                    {
+                        group = DetermineGroup(damageReport.victimMaster);
+                    }
+                    catch
+                    {
+                        Logger.LogError("error in DetermineGroup");
+                        group = -2;
+                    }
+
+                    switch (group)
+                    {
+                        case 1:
+                            Logger.LogInfo("Doppelganger killed, revived dead players");
+                            RespawnChar();
+                            break;
+                        case 2:
+                            Logger.LogInfo("Teleporter Boss killed, revived dead players");
+                            RespawnChar();
+                            break;
+                        case 3:
                             Logger.LogInfo("Special Boss killed, revived dead players");
                             RespawnChar();
-                        }
-                        
+                            break;
+                        default:
+                            Logger.LogInfo("Boss not valid, doing nothing");
+                            break;
                     }
                 }
                 
@@ -135,12 +155,41 @@ namespace BossVengenceRevive
                 orig(self, damageReport);
             };
         }
+
+        private int DetermineGroup(CharacterMaster master)
+        {
+            // get bossgroup
+            BossGroup bossGroup;
+            try
+            {
+                bossGroup = BossGroup.FindBossGroup(master.GetBody());
+            }
+            catch
+            {
+                Logger.LogError("unable to obtain bossgroup");
+                return -1;
+            }
+
+            
+            //is defeated boss group a doppelganger
+            if (master.inventory.GetItemCount(RoR2Content.Items.InvadingDoppelganger) > 0 )
+            {
+                return Doppelganger.Value ? 1 : 0;
+            }
+            //is defeated bossgroup a teleporter boss
+            if (bossGroup.GetComponent<TeleporterInteraction>())
+            {
+                return TeleporterBoss.Value ? 2 : 0;
+            }
+
+            //any other bose
+            return MiscBoss.Value ? 3 : 0;
+        }
         
         //respawn method to call
-        public void RespawnChar()
+        private void RespawnChar()
         {
             //see if they are playing with others
-            Logger.LogInfo("boss event cleared");
             var solo = RoR2.RoR2Application.isInSinglePlayer || !NetworkServer.active;
             if (solo) return;
             //loop through every player and res the ones that are dead
