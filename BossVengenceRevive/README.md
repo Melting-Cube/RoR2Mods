@@ -21,6 +21,7 @@
 - Special Bosses - evive dead players after you defeat a Special Boss (Default: Off)
 
 ## Changelog
+- 2.0.4 No more exception being thrown when there is no healthbar
 - 2.0.3 Fixed issues in simulacrum
 - 2.0.2 Fixed issue where aurelionite did not drop yellows
 - 2.0.1 Fixed dependency issues. Added options section to README.md

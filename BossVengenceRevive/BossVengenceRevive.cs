@@ -2,11 +2,11 @@
 using System.Security.Permissions;
 using BepInEx;
 using BepInEx.Configuration;
+using Rewired.Utils;
 using RiskOfOptions;
 using RiskOfOptions.Options;
 using RoR2;
 using UnityEngine.Networking;
-using Console = System.Console;
 
 #pragma warning disable CS0618
 [assembly: SecurityPermission( SecurityAction.RequestMinimum, SkipVerification = true )]
@@ -23,7 +23,7 @@ namespace BossVengenceRevive
         private const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
         private const string PluginAuthor = "Melting-Cube";
         private const string PluginName = "BossVengenceRevive";
-        private const string PluginVersion = "2.0.3";
+        private const string PluginVersion = "2.0.4";
         
         //add config entries
         private static ConfigEntry<bool> Enabled { get; set; } = null!;
@@ -99,27 +99,19 @@ namespace BossVengenceRevive
                 //is a boss and mod is enabled
                 if (damageReport.victimIsBoss && Enabled.Value &&
                     damageReport.victimMaster.inventory.GetItemCount(RoR2Content.Items.ExtraLife) == 0 &&
-                    damageReport.victimMaster.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoid) == 0)
+                    damageReport.victimMaster.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoid) == 0 &&
+                    !BossGroup.FindBossGroup(damageReport.victimBody).IsNullOrDestroyed())
                 {
-                    //is character last member if not return
-                    try
-                    {
-                        if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount > 1)
-                        {
-                            //call original method
-                            orig(self, damageReport);
-
-                            return;
-                        }
-                    }
-                    catch
+                    //is boss last boss, if not return
+                    if (BossGroup.FindBossGroup(damageReport.victimBody).combatSquad.memberCount > 1)
                     {
                         //call original method
                         orig(self, damageReport);
 
                         return;
                     }
-                    
+
+                    //get the boss group type
                     int group;
                     try
                     {
